@@ -1,0 +1,27 @@
+Django==4.2.11
+djangorestframework==3.15.1
+djangorestframework-simplejwt==5.3.1
+psycopg2-binary==2.9.9
+redis==5.0.3
+django-redis==5.4.0
+celery==5.3.6
+django-celery-beat==2.6.0
+gunicorn==21.2.0
+whitenoise==6.9.0
+
+# Typing
+mypy==1.9.0
+django-stubs==4.2.7
+djangorestframework-stubs==3.14.5
+
+# Linting / formatting
+flake8==7.0.0
+flake8-isort==6.1.1
+flake8-bugbear==24.2.6
+black==24.3.0
+isort==5.13.2
+
+# Testing
+pytest==8.1.1
+pytest-django==4.8.0
+factory-boy==3.3.0

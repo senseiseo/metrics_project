@@ -1,0 +1,86 @@
+services:
+  db:
+    image: postgres:15-alpine
+    restart: always
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-metrics_db}
+      POSTGRES_USER: ${POSTGRES_USER:-metrics_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-metrics_pass}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-metrics_user} -d ${POSTGRES_DB:-metrics_db}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    restart: always
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  migrate:
+    build: .
+    command: >
+      sh -c "python manage.py migrate &&
+             python manage.py collectstatic --no-input &&
+             python manage.py create_superuser"
+    volumes:
+      - ./src:/app
+      - ./reports:/app/reports
+    env_file:
+      - .env
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: "no"
+
+  web:
+    build: .
+    restart: always
+    command: gunicorn config.wsgi:application --bind 0.0.0.0:8000 --workers 2
+    volumes:
+      - ./src:/app
+      - ./reports:/app/reports
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+
+  celery:
+    build: .
+    restart: always
+    command: celery -A config.celery worker --loglevel=info
+    volumes:
+      - ./src:/app
+      - ./reports:/app/reports
+    env_file:
+      - .env
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+
+  celery-beat:
+    build: .
+    restart: always
+    command: celery -A config.celery beat --loglevel=info --scheduler django_celery_beat.schedulers:DatabaseScheduler
+    volumes:
+      - ./src:/app
+      - ./reports:/app/reports
+    env_file:
+      - .env
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+
+volumes:
+  postgres_data:
