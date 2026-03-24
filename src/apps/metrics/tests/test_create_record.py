@@ -1,8 +1,9 @@
+from unittest.mock import patch
+
 import pytest
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APIClient
-from unittest.mock import patch
 
 from apps.metrics.models import MetricRecord
 from apps.metrics.tests.factories import (
@@ -158,7 +159,15 @@ class TestCreateMetricRecord:
 
         assert response.status_code == status.HTTP_201_CREATED
         data = response.json()
-        for field in ["id", "metric_id", "value", "recorded_at", "tags", "note", "created_at"]:
+        for field in [
+            "id",
+            "metric_id",
+            "value",
+            "recorded_at",
+            "tags",
+            "note",
+            "created_at",
+        ]:
             assert field in data, f"Missing field: {field}"
         assert data["metric_id"] == metric.id
         assert len(data["tags"]) == 1

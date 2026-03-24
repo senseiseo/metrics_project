@@ -51,9 +51,7 @@ class MetricRecordListCreateView(generics.ListCreateAPIView):
 
     def _get_metric(self) -> Metric:
         metric_id: int = self.kwargs["metric_id"]
-        return generics.get_object_or_404(
-            Metric, pk=metric_id, owner=self.request.user
-        )
+        return generics.get_object_or_404(Metric, pk=metric_id, owner=self.request.user)
 
     def get_queryset(self) -> QuerySet[MetricRecord]:
         metric = self._get_metric()
