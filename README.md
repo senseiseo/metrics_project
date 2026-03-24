@@ -18,7 +18,6 @@ cp .env.example .env
 ```
 
 Основные переменные:
- # 5 minutes
 ```env
 SECRET_KEY=your-secret-key-change-in-production
 POSTGRES_DB=metrics_db
